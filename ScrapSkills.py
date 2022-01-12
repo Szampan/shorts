@@ -2,16 +2,17 @@
 App collecting the most commonly requested skills on NoFluffJobs.com
 
 TODO:
-- control with parameters (eg. how many top skills to show; how to show (plot, bar/ pie, print), search keywords)
+- url generated in the basis of search keywords
 - sqlite?
 
 
-Done: 
+DONE: 
 - in subpage: collect items from <common-posting-requirements (no id)> and <common-posting-requirements id="posting-nice-to-have">
 - create dictionary / counter: {skill: quantity} from collected data
 - find and go to all subpages if "python" in <nfj-posting-item-title> or in <div class="posting-info"> 
     within <a class="posting-list-item>
 - go to the next page
+- control with parameters
 
 """
 
@@ -104,7 +105,6 @@ def find_skills_on_subpage(subpage):
     html_requirements_nice_wrapper = bs.body.find('common-posting-requirements', attrs={'id': 'posting-nice-to-have'})
     if html_requirements_nice_wrapper:
         html_requirements_nice = html_requirements_nice_wrapper.find_all('common-posting-item-tag')
-
     requirements_all = [requirement.text for requirement in html_requirements_all]
     requirements_nice = [requirement.text for requirement in html_requirements_nice]
     requirements_obligatory = [item for item in requirements_all if item not in requirements_nice]
@@ -114,7 +114,6 @@ def find_skills_on_subpage(subpage):
 def print_most_common(list_of_items, number):
     for item, count in Counter(list_of_items).most_common(number):
         print(item, '->', count)
-    
  
 def plot_most_common(list_of_items, number, title):
     items = []
@@ -123,7 +122,6 @@ def plot_most_common(list_of_items, number, title):
         items.append(item)
         popularity.append(count)
 
-    # print('PLOT:', items, popularity)
     plt.style.use('fivethirtyeight')
     plt.title(title)
 
@@ -143,9 +141,6 @@ def plot_most_common(list_of_items, number, title):
     plt.show()
 
 def exclude_unnecessary(lst, to_exclude):
-    ic(to_exclude)
-    ic(lst)
-
     if to_exclude:
         for word in to_exclude:
             ic(word)
