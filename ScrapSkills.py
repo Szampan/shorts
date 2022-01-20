@@ -110,7 +110,7 @@ def get_criteria_suffix(loc, reqs, seniorities):
         crit_req = get_crit_req_if_possible(reqs)
         crit_seniority = get_crit_seniority_if_possible(seniorities) #"seniority%3D" + ",".join(seniorities) # Źle, bo wpisuje seniorities nawet jeśli ich nie ma
 
-        criteria = [crit_seniority, crit_city, crit_req]
+        criteria = [crit_city, crit_seniority, crit_req]
         criteria_suffix = "?criteria=" + "%20".join(filter(None, criteria))
         return criteria_suffix
 

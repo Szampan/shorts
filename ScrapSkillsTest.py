@@ -25,7 +25,6 @@ class TestScrapSkills:
         keywords_1 = "python" # junior" # trainee"
         # when
         result_1 = generate_URL(keywords_1)
-
         # then
         assert result_1 == "https://nofluffjobs.com/pl/praca-it/python"
 
@@ -44,14 +43,19 @@ class TestScrapSkills:
         result_4 = generate_URL(keywords_4)
         assert result_4 == "https://nofluffjobs.com/pl/praca-it/python?criteria=seniority%3Dtrainee,junior"
 
+    def test_generate_URL_e(self):
+        keywords_5 = "python Junior rower aws warszawa Białystok trainee"
+        result_5 = generate_URL(keywords_5)
+        assert result_5 == "https://nofluffjobs.com/pl/praca-it/warszawa/python?criteria=city%3Dbialystok%20seniority%3Dtrainee,junior%20requirement%3Daws"
+
+
+
     def test_exclude_unnecessary(self):
         # given
         words = 'all you base are belong to us'.split()
         to_exclude = 'all base are'.split()
-
         # when
         result = exclude_unnecessary(words, to_exclude)
-
         # then
         assert result == "you belong to us".split()
 
