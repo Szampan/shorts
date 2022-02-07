@@ -1,22 +1,13 @@
+# coding=utf-8
+
 """
 App collecting the most commonly requested skills on NoFluffJobs.com
 
 TODO:
-- url generated in the basis of search keywords
 - sqlite?
-- tests
-
-
-DONE: 
-- in subpage: collect items from <common-posting-requirements (no id)> and <common-posting-requirements id="posting-nice-to-have">
-- create dictionary / counter: {skill: quantity} from collected data
-- find and go to all subpages if "python" in <nfj-posting-item-title> or in <div class="posting-info"> 
-    within <a class="posting-list-item>
-- go to the next page
-- control with parameters
-
+- UI?
 """
-
+ 
 from requests import get
 from bs4 import BeautifulSoup
 from collections import Counter
@@ -29,109 +20,21 @@ import time
 
 start_time = time.time()
 
-# URL = "https://nofluffjobs.com/pl/praca-it/praca-zdalna/python?criteria=city%3Dbialystok%20seniority%3Dtrainee,junior"
-URL = "https://nofluffjobs.com/pl/praca-it/python?criteria=seniority%3Dtrainee,junior"  # TODO = URL generated in the basis of search keywords
-# URL = generate_URL()
-
 @dataclass
 class Config:
-    base_URL: str = "https://nofluffjobs.com"
-    # URL: str = "None"                     # TODO: URL generated on the basis of search keywords
-    keywords: str = "C flat"                # str or list?
-    to_exclude: tuple = ("python",)           
+    keywords: str = "python junior trainee, mid"               
     obligatory_print_num: int = 20
     obligatory_plot_num: int = 15           
     nice_to_have_print_num: int = 15        
     subpages_parse_num: int = None             # For testing. None if parse all
-
-    # new_URL = self.generate_URL()
-
-def generate_URL(keywords):
-    keywords = keywords.lower().split()
-    print(keywords)
-    
+    to_exclude: tuple = ("python",)           
+    base_URL: str = "https://nofluffjobs.com"
     available_requirements = ["java", "python", ".net", "javascript", "php", "react", "angular", "android", "c++", "ios", "node.js", "sql", "golang", "ruby on rails", "scala", "aws", "azure", "c"]
     available_localizations = "Zdalnie, Warszawa, Kraków, Wrocław, Gdańsk, Poznań, Trójmiasto, Katowice, Śląsk, Łódź, Białystok, Gdynia, Lublin, Rzeszów, Bydgoszcz, Gliwice, Częstochowa, Szczecin, Sopot".lower().split(", ")
     available_seniorities = "Trainee, Stażysta, Mid, Junior, Senior, Expert".lower().split(", ")
-    interfix = "/pl/praca-it"
-
-    localizations = [normalize_localization(localization) for localization in available_localizations if localization in keywords]
-    requirements = [requirement for requirement in available_requirements if requirement in keywords]
-    seniorities = [seniority for seniority in available_seniorities if seniority in keywords]
-
-    for keyword in keywords:        # EXCEPTION
-        if keyword not in available_requirements + available_localizations + available_seniorities:
-            print(f'ERROR: wrong keyword ({keyword})')
-        
-    main_localization = get_first_if_possible(localizations)
-    main_requirement = get_first_if_possible(requirements)
-    # seniority = get_seniority_if_possible(seniorities)  # include in more_info?
-    criteria_suffix = get_criteria_suffix(localizations, requirements, seniorities)
-
-    link = Config.base_URL + interfix + main_localization + main_requirement + criteria_suffix
-    # link = "https://nofluffjobs.com/pl/praca-it/python"
-    # link = "https://nofluffjobs.com/pl/praca-it/python?criteria=seniority%3Djunior"
-    return link
-
-
-
-def get_first_if_possible(items: list) -> str:          # SHOULD BE A LIST?
-    if items:
-        return f"/{items[0]}"
-    return ""
-
-def get_later_if_possible(items: list) -> str:
-    if len(items) > 1:
-        return ",".join(items[1:])
-    return #""
-
-def get_crit_city_if_possible(loc: list) -> str:
-    if len(loc) > 1:
-        return "city%3D" + get_later_if_possible(loc)
-    return #""
-
-def get_crit_seniority_if_possible(seniorities: list) -> str:
-    if seniorities:
-        return "seniority%3D" + ",".join(seniorities)
-    return #""
-
-def get_crit_req_if_possible(reqs: list) -> str:
-    if len(reqs) > 1:
-        return "requirement%3D" + get_later_if_possible(reqs)
-    return #""
-
-def get_criteria_suffix(loc, reqs, seniorities):
-    ic(loc, reqs, seniorities)
-    
-    if len(loc) > 1 or len(reqs) > 1 or seniorities:
-
-        #  chosen_seniorities = get_chosen_seniorities_if_possible(seniorities)  # STARE
-        crit_city = get_crit_city_if_possible(loc)   # "city%3D" + get_later_if_possible(loc)      # zrobić z tego finkcję, albo inny sposób, żeby początkowy string się nie dodawał bez sensu
-        crit_req = get_crit_req_if_possible(reqs)
-        crit_seniority = get_crit_seniority_if_possible(seniorities) #"seniority%3D" + ",".join(seniorities) # Źle, bo wpisuje seniorities nawet jeśli ich nie ma
-
-        criteria = [crit_city, crit_seniority, crit_req]
-        criteria_suffix = "?criteria=" + "%20".join(filter(None, criteria))
-        return criteria_suffix
-
-    return ""
-
-
-def normalize_localization(word: str) -> str:      
-    if word == "zdalnie":
-        return "praca-zdalna"
-    return remove_accents(word)
-
-def remove_accents(input_text) -> str:
-    strange='ŮôῡΒძěἊἦëĐᾇόἶἧзвŅῑἼźἓŉἐÿἈΌἢὶЁϋυŕŽŎŃğûλВὦėἜŤŨîᾪĝžἙâᾣÚκὔჯᾏᾢĠфĞὝŲŊŁČῐЙῤŌὭŏყἀхῦЧĎὍОуνἱῺèᾒῘᾘὨШūლἚύсÁóĒἍŷöὄЗὤἥბĔõὅῥŋБщἝξĢюᾫაπჟῸდΓÕűřἅгἰშΨńģὌΥÒᾬÏἴქὀῖὣᾙῶŠὟὁἵÖἕΕῨčᾈķЭτἻůᾕἫжΩᾶŇᾁἣჩαἄἹΖеУŹἃἠᾞåᾄГΠКíōĪὮϊὂᾱიżŦИὙἮὖÛĮἳφᾖἋΎΰῩŚἷРῈĲἁéὃσňİΙῠΚĸὛΪᾝᾯψÄᾭêὠÀღЫĩĈμΆᾌἨÑἑïოĵÃŒŸζჭᾼőΣŻçųøΤΑËņĭῙŘАдὗპŰἤცᾓήἯΐÎეὊὼΘЖᾜὢĚἩħĂыῳὧďТΗἺĬὰὡὬὫÇЩᾧñῢĻᾅÆßшδòÂчῌᾃΉᾑΦÍīМƒÜἒĴἿťᾴĶÊΊȘῃΟúχΔὋŴćŔῴῆЦЮΝΛῪŢὯнῬũãáἽĕᾗნᾳἆᾥйᾡὒსᾎĆрĀüСὕÅýფᾺῲšŵкἎἇὑЛვёἂΏθĘэᾋΧĉᾐĤὐὴιăąäὺÈФĺῇἘſგŜæῼῄĊἏØÉПяწДĿᾮἭĜХῂᾦωთĦлðὩზკίᾂᾆἪпἸиᾠώᾀŪāоÙἉἾρаđἌΞļÔβĖÝᾔĨНŀęᾤÓцЕĽŞὈÞუтΈέıàᾍἛśìŶŬȚĳῧῊᾟάεŖᾨᾉςΡმᾊᾸįᾚὥηᾛġÐὓłγľмþᾹἲἔбċῗჰხοἬŗŐἡὲῷῚΫŭᾩὸùᾷĹēრЯĄὉὪῒᾲΜᾰÌœĥტ'
-    ascii_replacements='UoyBdeAieDaoiiZVNiIzeneyAOiiEyyrZONgulVoeETUiOgzEaoUkyjAoGFGYUNLCiIrOOoqaKyCDOOUniOeiIIOSulEySAoEAyooZoibEoornBSEkGYOapzOdGOuraGisPngOYOOIikoioIoSYoiOeEYcAkEtIuiIZOaNaicaaIZEUZaiIaaGPKioIOioaizTIYIyUIifiAYyYSiREIaeosnIIyKkYIIOpAOeoAgYiCmAAINeiojAOYzcAoSZcuoTAEniIRADypUitiiIiIeOoTZIoEIhAYoodTIIIaoOOCSonyKaAsSdoACIaIiFIiMfUeJItaKEISiOuxDOWcRoiTYNLYTONRuaaIeinaaoIoysACRAuSyAypAoswKAayLvEaOtEEAXciHyiiaaayEFliEsgSaOiCAOEPYtDKOIGKiootHLdOzkiaaIPIIooaUaOUAIrAdAKlObEYiINleoOTEKSOTuTEeiaAEsiYUTiyIIaeROAsRmAAiIoiIgDylglMtAieBcihkoIrOieoIYuOouaKerYAOOiaMaIoht'
-    translator=str.maketrans(strange,ascii_replacements)
-    return input_text.translate(translator)
-
-
-
 
 def main():
+    URL = generate_URL(Config.keywords)
     URL_subpages = get_list_of_subpages(URL)
     obligatory = []
     nice_to_have = []
@@ -143,8 +46,83 @@ def main():
     print('\nNICE TO HAVE:')
     print_most_common(nice_to_have, Config.nice_to_have_print_num)     # what if there is less than 10? fix it
 
-    plot_most_common(obligatory, 15, f"Most commonly requested skills ({len(URL_subpages)} offers)")
+    plot_most_common(obligatory, 15, f"Most commonly requested skills. \nKeywords:  {Config.keywords}  \n({len(URL_subpages)} offers)")
     # plot_most_common(nice_to_have, 15, "Nice to have skills")
+    
+def generate_URL(keywords):
+    keywords = keywords.lower().split()
+    print(keywords)
+    
+    available_requirements = Config.available_requirements
+    available_localizations = Config.available_localizations
+    available_seniorities = Config.available_seniorities
+    interfix = "/pl/praca-it"
+
+    localizations = [normalize_localization(localization) for localization in available_localizations if localization in keywords]
+    requirements = [requirement for requirement in available_requirements if requirement in keywords]
+    seniorities = [seniority for seniority in available_seniorities if seniority in keywords]
+
+    for keyword in keywords:        # EXCEPTION
+        if keyword not in available_requirements + available_localizations + available_seniorities:
+            print(f'ERROR: wrong keyword ({keyword})')
+            # raise WrongKeyword(f'Wrong keyword: {keyword}')
+        
+    main_localization = get_first_if_possible(localizations)
+    main_requirement = get_first_if_possible(requirements)
+    criteria_suffix = get_criteria_suffix(localizations, requirements, seniorities)
+
+    link = Config.base_URL + interfix + main_localization + main_requirement + criteria_suffix
+    return link
+
+def normalize_localization(word: str) -> str:      
+    if word == "zdalnie":
+        return "praca-zdalna"
+    return remove_accents(word)
+
+def remove_accents(input_text) -> str:
+    strange=           'ŮôῡΒძěἊἦëĐᾇόἶἧзвŅῑἼźἓŉἐÿἈΌἢὶЁϋυŕŽŎŃğûλВὦėἜŤŨîᾪĝžἙâᾣÚκὔჯᾏᾢĠфĞὝŲŊŁČῐЙῤŌὭŏყἀхῦЧĎὍОуνἱῺèᾒῘᾘὨШūლἚύсÁóĒἍŷöὄЗὤἥბĔõὅῥŋБщἝξĢюᾫაπჟῸდΓÕűřἅгἰშΨńģὌΥÒᾬÏἴქὀῖὣᾙῶŠὟὁἵÖἕΕῨčᾈķЭτἻůᾕἫжΩᾶŇᾁἣჩαἄἹΖеУŹἃἠᾞåᾄГΠКíōĪὮϊὂᾱიżŦИὙἮὖÛĮἳφᾖἋΎΰῩŚἷРῈĲἁéὃσňİΙῠΚĸὛΪᾝᾯψÄᾭêὠÀღЫĩĈμΆᾌἨÑἑïოĵÃŒŸζჭᾼőΣŻçųøΤΑËņĭῙŘАдὗპŰἤცᾓήἯΐÎეὊὼΘЖᾜὢĚἩħĂыῳὧďТΗἺĬὰὡὬὫÇЩᾧñῢĻᾅÆßшδòÂчῌᾃΉᾑΦÍīМƒÜἒĴἿťᾴĶÊΊȘῃΟúχΔὋŴćŔῴῆЦЮΝΛῪŢὯнῬũãáἽĕᾗნᾳἆᾥйᾡὒსᾎĆрĀüСὕÅýფᾺῲšŵкἎἇὑЛვёἂΏθĘэᾋΧĉᾐĤὐὴιăąäὺÈФĺῇἘſგŜæῼῄĊἏØÉПяწДĿᾮἭĜХῂᾦωთĦлðὩზკίᾂᾆἪпἸиᾠώᾀŪāоÙἉἾρаđἌΞļÔβĖÝᾔĨНŀęᾤÓцЕĽŞὈÞუтΈέıàᾍἛśìŶŬȚĳῧῊᾟάεŖᾨᾉςΡმᾊᾸįᾚὥηᾛġÐὓłγľмþᾹἲἔбċῗჰხοἬŗŐἡὲῷῚΫŭᾩὸùᾷĹēრЯĄὉὪῒᾲΜᾰÌœĥტ'
+    ascii_replacements='UoyBdeAieDaoiiZVNiIzeneyAOiiEyyrZONgulVoeETUiOgzEaoUkyjAoGFGYUNLCiIrOOoqaKyCDOOUniOeiIIOSulEySAoEAyooZoibEoornBSEkGYOapzOdGOuraGisPngOYOOIikoioIoSYoiOeEYcAkEtIuiIZOaNaicaaIZEUZaiIaaGPKioIOioaizTIYIyUIifiAYyYSiREIaeosnIIyKkYIIOpAOeoAgYiCmAAINeiojAOYzcAoSZcuoTAEniIRADypUitiiIiIeOoTZIoEIhAYoodTIIIaoOOCSonyKaAsSdoACIaIiFIiMfUeJItaKEISiOuxDOWcRoiTYNLYTONRuaaIeinaaoIoysACRAuSyAypAoswKAayLvEaOtEEAXciHyiiaaayEFliEsgSaOiCAOEPYtDKOIGKiootHLdOzkiaaIPIIooaUaOUAIrAdAKlObEYiINleoOTEKSOTuTEeiaAEsiYUTiyIIaeROAsRmAAiIoiIgDylglMtAieBcihkoIrOieoIYuOouaKerYAOOiaMaIoht'
+    translator=str.maketrans(strange,ascii_replacements)
+    return input_text.translate(translator)
+
+def get_first_if_possible(items: list) -> str:        
+    if items:
+        return f"/{items[0]}"
+    return ""
+
+def get_criteria_suffix(loc, reqs, seniorities):
+    ic(loc, reqs, seniorities)
+    
+    if len(loc) > 1 or len(reqs) > 1 or seniorities:
+        crit_city = get_crit_city_if_possible(loc)   
+        crit_req = get_crit_req_if_possible(reqs)
+        crit_seniority = get_crit_seniority_if_possible(seniorities) 
+
+        criteria = [crit_city, crit_seniority, crit_req]
+        criteria_suffix = "?criteria=" + "%20".join(filter(None, criteria))
+        return criteria_suffix
+    return ""
+
+def get_crit_city_if_possible(loc: list) -> str:
+    if len(loc) > 1:
+        return "city%3D" + get_later_if_possible(loc)
+    return
+
+def get_crit_req_if_possible(reqs: list) -> str:
+    if len(reqs) > 1:
+        return "requirement%3D" + get_later_if_possible(reqs)
+    return
+
+def get_later_if_possible(items: list) -> str:
+    if len(items) > 1:
+        return ",".join(items[1:])
+    return
+    
+def get_crit_seniority_if_possible(seniorities: list) -> str:
+    if seniorities:
+        return "seniority%3D" + ",".join(seniorities)
+    return 
+
 
 def get_list_of_subpages(url) -> list:     # ADD FILTER ('python')
     print('\nGET LIST OF SUBPAGES')
@@ -235,6 +213,9 @@ def exclude_unnecessary(lst: list, to_exclude: list) -> list:
             lst = list(filter(lambda x: x.lower().strip() != word.lower(), lst))
     ic(lst)
     return lst
+
+# class WrongKeyword(Exception):
+#     pass
 
 
 if __name__ == "__main__":

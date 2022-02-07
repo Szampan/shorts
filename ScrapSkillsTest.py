@@ -6,6 +6,7 @@ python -m pytest ScrapSkillsTest.py
 '''
 
 from ScrapSkills import *
+import pytest
 
 print(generate_URL("python"))
 print()
@@ -47,6 +48,11 @@ class TestScrapSkills:
         keywords_5 = "python Junior rower aws warszawa Białystok trainee"
         result_5 = generate_URL(keywords_5)
         assert result_5 == "https://nofluffjobs.com/pl/praca-it/warszawa/python?criteria=city%3Dbialystok%20seniority%3Dtrainee,junior%20requirement%3Daws"
+
+    # def test_generate_URL_wrong_keyword(self):
+    #     keywords_6 = "rower"
+    #     with pytest.raises(WrongKeyword):
+    #         generate_URL(keywords_6)
 
 
 

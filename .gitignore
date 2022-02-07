@@ -1,5 +1,6 @@
 /__pycache__/
 /NN_from_scratch
+/temp
 Dockerfile
 test.py
 ScrapSkills old.py
