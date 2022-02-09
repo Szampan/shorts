@@ -1,43 +1,35 @@
 import sys
-from icecream import ic
-import time
-start_time = time.time()
 
+MAX_MASS = 6500
 input_data = [list(map(int, i.split())) for i in sys.stdin]
 n, masses, initial_order, target_order = input_data
 n = n[0]
-
-shift_graph = {elephant: initial_order[target_order.index(elephant)] for elephant in initial_order}
-cycles = {} 
+shift_graph = [initial_order[target_order.index(i+1)]-1 for i in range(n)]
+cycles = [] 
 visited = [False] * n
 cycle_number = 0  
 
-def get_mass(elephant):
-    return masses[elephant-1]
-
 for i in range(n):
-    elephant = i + 1 
+    elephant = i
     if not visited[i]:
-        cycles[cycle_number] = []
-        while not visited[elephant-1]:
-            cycles[cycle_number].append(elephant)
-            visited[elephant-1] = True
+        cycles.append([])
+        while not visited[elephant]:
+            cycles[cycle_number].append(elephant+1)
+            visited[elephant] = True
             elephant = shift_graph[elephant]
         cycle_number += 1
 
-print("---AFTER CYCLES--- %s seconds ---" % (time.time() - start_time))
-
-min_mass_global = 6500
+min_mass_global = MAX_MASS
 total_masses_per_cycle = []
 min_masses_per_cycle = []
 
-for cycle in cycles:
+for cycle in range(cycle_number):
     total_masses_in_cycle = 0
-    min_mass_in_cycle = 6500
+    min_mass_in_cycle = MAX_MASS
 
     for elephant in cycles[cycle]:
-        total_masses_in_cycle += get_mass(elephant)    
-        min_mass_in_cycle = min(min_mass_in_cycle, get_mass(elephant))
+        total_masses_in_cycle += masses[elephant-1]    
+        min_mass_in_cycle = min(min_mass_in_cycle, masses[elephant-1])
 
     total_masses_per_cycle.append(total_masses_in_cycle)
     min_masses_per_cycle.append(min_mass_in_cycle)
@@ -45,10 +37,8 @@ for cycle in cycles:
 
 result = 0
 for i in range(cycle_number):
-    method_1 = total_masses_per_cycle[i] + (len(cycles[i+0]) - 2) * min_masses_per_cycle[i]          
-    method_2 = total_masses_per_cycle[i] + min_masses_per_cycle[i] + (len(cycles[i+0]) + 1) * min_mass_global
+    method_1 = total_masses_per_cycle[i] + (len(cycles[i]) - 2) * min_masses_per_cycle[i]          
+    method_2 = total_masses_per_cycle[i] + min_masses_per_cycle[i] + (len(cycles[i]) + 1) * min_mass_global
     result += min(method_1, method_2)
 
 print(result)
-
-print("---FINISH--- %s seconds ---" % (time.time() - start_time))
