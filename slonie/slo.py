@@ -12,9 +12,9 @@ cycle_number = 0
 for i in range(n):
     elephant = i
     if not visited[i]:
-        cycles.append([])
+        cycles.append(set())
         while not visited[elephant]:
-            cycles[cycle_number].append(elephant+1)
+            cycles[cycle_number].add(elephant+1)
             visited[elephant] = True
             elephant = shift_graph[elephant]
         cycle_number += 1
