@@ -1,7 +1,7 @@
 # shorts
 Short apps, tests &amp; exercise solutions.
 
-ScrapSkills: 
+## ScrapSkills: 
 App collecting the most commonly requested skills on NoFluffJobs.com
 
 

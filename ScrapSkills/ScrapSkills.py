@@ -22,7 +22,7 @@ start_time = time.time()
 
 @dataclass
 class Config:
-    keywords: str = "python junior trainee, mid"               
+    keywords: str = "python junior trainee zdalnie"               
     obligatory_print_num: int = 20
     obligatory_plot_num: int = 15           
     nice_to_have_print_num: int = 15        
