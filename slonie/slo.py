@@ -5,7 +5,7 @@ input_data = [list(map(int, i.split())) for i in sys.stdin]
 n, masses, initial_order, target_order = input_data
 n = n[0]
 
-shift_graph = [x-1 for _, x in sorted(zip(target_order, initial_order))]
+shift_graph = [x-1 for _, x in sorted(zip(target_order, initial_order))]    
 cycles = [] 
 visited = [False] * n
 cycle_number = 0  
